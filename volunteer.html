@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Become a Volunteer - IMAN Jibril Foundation</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+      <style>
+        body {
+            background: #f9fafb;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .volunteer-section {
+            max-width: 340px;
+            margin: 64px auto;
+            background: #e6f9e6;
+            border-radius: 16px;
+            box-shadow: 0 2px 24px rgba(18,85,15,0.13);
+            padding: 32px 24px;
+            text-align: center;
+            color: #12550f;
+        }
+        .volunteer-logo {
+            display: block;
+            margin: 0 auto 24px auto;
+            max-width: 120px;
+            width: 40%;
+            cursor: pointer;
+        }
+        .volunteer-section h3 {
+            margin-bottom: 16px;
+            font-size: 1.5rem;
+            color: #12550f;
+        }
+        .volunteer-section p {
+            margin-bottom: 22px;
+            font-size: 1.08rem;
+        }
+        .btn.volunteer {
+            background: #12550f;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 0;
+            font-size: 1rem;
+            width: 100%;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: background 0.2s;
+        }
+        .btn.volunteer:hover {
+            background: #0e440c;
+        }
+
+        /* Improved mobile responsiveness */
+        @media (max-width: 600px) {
+            .volunteer-section {
+                max-width: 98vw;
+                width: 98vw;
+                margin: 18px auto;
+                padding: 16px 6px;
+                border-radius: 10px;
+                box-shadow: 0 2px 8px rgba(18,85,15,0.07);
+            }
+            .volunteer-logo {
+                max-width: 80px;
+                width: 50vw;
+                margin-bottom: 16px;
+            }
+            .volunteer-section h3 {
+                font-size: 1.2rem;
+                margin-bottom: 12px;
+            }
+            .volunteer-section p {
+                font-size: 1rem;
+                margin-bottom: 16px;
+            }
+            .btn.volunteer {
+                font-size: 1.05rem;
+                padding: 12px;
+                border-radius: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="volunteer-section">
+        <a href="{% url 'home' %}">
+            <img src="{% static 'images/imanJ.png' %}" alt="ImanJibril" class="volunteer-logo">
+        </a>
+        <h3>Become a Volunteer</h3>
+        <p>
+            {% if volunteer_message %}
+                {{ volunteer_message }}
+            {% else %}
+                Thank you for your interest in volunteering with IMAN Jibril Foundation.<br>
+                Please click "Accept" below to confirm your registration as a volunteer.
+            {% endif %}
+        </p>
+        {% if not volunteer_message %}
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn volunteer">Accept</button>
+        </form>
+        {% endif %}
+    </div>
+</body>
+</html>
