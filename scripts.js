@@ -55,54 +55,77 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // GALLERY
-const track = document.querySelector(".carousel-track");
-const prevBtn = document.querySelector(".carousel-btn.prev");
-const nextBtn = document.querySelector(".carousel-btn.next");
-
-// Arrow‐button scrolling
-nextBtn.addEventListener("click", () => {
-  track.scrollBy({ left: track.clientWidth * 0.8 + 16, behavior: "smooth" });
-});
-prevBtn.addEventListener("click", () => {
-  track.scrollBy({ left: -(track.clientWidth * 0.8 + 16), behavior: "smooth" });
-});
-
-// Dragging behavior
-let isDown = false,
-  startX,
-  scrollLeft;
-track.addEventListener("mousedown", (e) => {
-  isDown = true;
-  track.classList.add("dragging");
-  startX = e.pageX - track.offsetLeft;
-  scrollLeft = track.scrollLeft;
-});
-track.addEventListener("mouseup", () => {
-  isDown = false;
-  track.classList.remove("dragging");
-});
-track.addEventListener("mouseleave", () => {
-  isDown = false;
-  track.classList.remove("dragging");
-});
-track.addEventListener("mousemove", (e) => {
-  if (!isDown) return;
-  e.preventDefault();
-  const x = e.pageX - track.offsetLeft;
-  const walk = (x - startX) * 1.5; // scroll-fast factor
-  track.scrollLeft = scrollLeft - walk;
-});
-
-// Touch support
-track.addEventListener("touchstart", (e) => {
-  isDown = true;
-  startX = e.touches[0].pageX - track.offsetLeft;
-  scrollLeft = track.scrollLeft;
-});
-track.addEventListener("touchend", () => (isDown = false));
-track.addEventListener("touchmove", (e) => {
-  if (!isDown) return;
-  const x = e.touches[0].pageX - track.offsetLeft;
-  const walk = (x - startX) * 1.5;
-  track.scrollLeft = scrollLeft - walk;
-});
+    const track = document.getElementById('slider-track');
+    const slides = Array.from(document.querySelectorAll('.slider-slide'));
+    const prevBtn = document.getElementById('slider-prev');
+    const nextBtn = document.getElementById('slider-next');
+    const dots = document.getElementById('slider-dots');
+    let current = 0;
+    let slideCount = slides.length;
+    // Dots
+    function renderDots() {
+      dots.innerHTML = '';
+      for (let i = 0; i < slideCount; i++) {
+        let dot = document.createElement('div');
+        dot.className = 'slider-dot' + (i === current ? ' active' : '');
+        dot.tabIndex = 0;
+        dot.setAttribute('aria-label', `Go to slide ${i+1}`);
+        dot.onclick = () => goTo(i);
+        dot.onkeydown = e => { if(e.key==='Enter'||e.key===' ') goTo(i); };
+        dots.appendChild(dot);
+      }
+    }
+    function goTo(idx) {
+      current = Math.max(0, Math.min(slideCount-1, idx));
+      update();
+    }
+    function update() {
+      const w = slides[0].offsetWidth;
+      track.style.transform = `translateX(${-current * w}px)`;
+      renderDots();
+      prevBtn.disabled = current === 0;
+      nextBtn.disabled = current === slideCount-1;
+    }
+    prevBtn.onclick = () => goTo(current-1);
+    nextBtn.onclick = () => goTo(current+1);
+    // Touch/drag
+    let startX = 0, dragX = 0, dragging = false;
+    track.addEventListener('mousedown', e => {
+      dragging = true; startX = e.pageX;
+      track.style.transition = 'none';
+    });
+    window.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      dragX = e.pageX - startX;
+      track.style.transform = `translateX(${-current*slides[0].offsetWidth + dragX}px)`;
+    });
+    window.addEventListener('mouseup', () => {
+      if (!dragging) return;
+      track.style.transition = '';
+      if (dragX < -40 && current < slideCount-1) goTo(current+1);
+      else if (dragX > 40 && current > 0) goTo(current-1);
+      else update();
+      dragging = false; dragX = 0;
+    });
+    // Touch events
+    track.addEventListener('touchstart', e => {
+      if(e.touches.length>1) return;
+      dragging = true; startX = e.touches[0].pageX;
+      track.style.transition = 'none';
+    });
+    track.addEventListener('touchmove', e => {
+      if (!dragging) return;
+      dragX = e.touches[0].pageX - startX;
+      track.style.transform = `translateX(${-current*slides[0].offsetWidth + dragX}px)`;
+    });
+    track.addEventListener('touchend', () => {
+      track.style.transition = '';
+      if (dragX < -40 && current < slideCount-1) goTo(current+1);
+      else if (dragX > 40 && current > 0) goTo(current-1);
+      else update();
+      dragging = false; dragX = 0;
+    });
+    // Resize: update slide width
+    window.addEventListener('resize', update);
+    // Init
+    window.addEventListener('DOMContentLoaded', () => {renderDots(); update();});
